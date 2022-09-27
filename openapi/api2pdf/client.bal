@@ -15,6 +15,7 @@
 // under the License.
 
 import ballerina/http;
+import ballerinax/commons;
 
 # Provides API key configurations needed when communicating with a remote HTTP endpoint.
 public type ApiKeysConfig record {|
@@ -22,6 +23,13 @@ public type ApiKeysConfig record {|
     string authorization;
     # Represents API Key `apikey`
     string apikey;
+|};
+
+# Client configuration details.
+public type ConnectionConfig record {|
+   *commons:ConnectionConfig;
+   # Configurations related to client authentication
+   never auth?;
 |};
 
 # This is a generated connector from [Api2Pdf](https://www.api2pdf.com/) OpenAPI Specification.
@@ -40,11 +48,11 @@ public isolated client class Client {
     # + clientConfig - The configurations to be used when initializing the `connector` 
     # + serviceUrl - URL of the target service 
     # + return - An error if connector initialization failed 
-    public isolated function init(ApiKeysConfig apiKeyConfig, http:ClientConfiguration clientConfig =  {}, string serviceUrl = "https://v2.api2pdf.com/") returns error? {
-        http:Client httpEp = check new (serviceUrl, clientConfig);
+    public isolated function init(ApiKeysConfig apiKeyConfig, ConnectionConfig config =  {}, string serviceUrl = "https://v2.api2pdf.com/") returns error? {
+        http:ClientConfiguration httpClientConfig = check commons:constructHTTPClientConfig(config);
+        http:Client httpEp = check new (serviceUrl, httpClientConfig);
         self.clientEp = httpEp;
         self.apiKeyConfig = apiKeyConfig.cloneReadOnly();
-        return;
     }
     # Convert raw HTML to PDF
     #

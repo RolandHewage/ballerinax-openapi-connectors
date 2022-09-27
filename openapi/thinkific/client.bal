@@ -15,6 +15,7 @@
 // under the License.
 
 import ballerina/http;
+import ballerinax/commons;
 
 # Provides API key configurations needed when communicating with a remote HTTP endpoint.
 public type ApiKeysConfig record {|
@@ -28,6 +29,13 @@ public type ApiKeysConfig record {|
 public type AuthConfig record {|
     # Auth Configuration
     http:BearerTokenConfig|ApiKeysConfig auth;
+|};
+
+# Client configuration details.
+public type ConnectionConfig record {|
+    *commons:ConnectionConfig;
+    # Configurations related to client authentication
+    never auth?;
 |};
 
 # Thinkific's public API can be used to integrate your application with your Thinkific site.
@@ -44,16 +52,16 @@ public isolated client class Client {
     # + clientConfig - The configurations to be used when initializing the `connector` 
     # + serviceUrl - URL of the target service 
     # + return - An error if connector initialization failed 
-    public isolated function init(AuthConfig authConfig, http:ClientConfiguration clientConfig =  {}, string serviceUrl = "https://api.thinkific.com/api/public/v1") returns error? {
+    public isolated function init(AuthConfig authConfig, ConnectionConfig config =  {}, string serviceUrl = "https://api.thinkific.com/api/public/v1") returns error? {
+        http:ClientConfiguration httpClientConfig = check commons:constructHTTPClientConfig(config);
         if authConfig.auth is ApiKeysConfig {
             self.apiKeyConfig = (<ApiKeysConfig>authConfig.auth).cloneReadOnly();
         } else {
-            clientConfig.auth = <http:BearerTokenConfig>authConfig.auth;
+            httpClientConfig.auth = <http:BearerTokenConfig>authConfig.auth;
             self.apiKeyConfig = ();
         }
-        http:Client httpEp = check new (serviceUrl, clientConfig);
+        http:Client httpEp = check new (serviceUrl, httpClientConfig);
         self.clientEp = httpEp;
-        return;
     }
     # List a bundle
     #

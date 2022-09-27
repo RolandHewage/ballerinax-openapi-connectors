@@ -15,6 +15,14 @@
 // under the License.
 
 import ballerina/http;
+import ballerinax/commons;
+
+# Client configuration details.
+public type ConnectionConfig record {|
+    *commons:ConnectionConfig;
+    # Configurations related to client authentication
+    never auth?;
+|};
 
 # This is a generated connector from [Novel COVID-19 API version 3.0.0](https://disease.sh/docs/) OpenAPI Specification.
 # Ballerina connector for COVID-19 provides easy access to latest COVID-19 related data across the world. Please refer to [API documentation](https://disease.sh) for more detail.
@@ -27,10 +35,10 @@ public isolated client class Client {
     # + clientConfig - The configurations to be used when initializing the `connector` 
     # + serviceUrl - URL of the target service 
     # + return - An error if connector initialization failed 
-    public isolated function init(http:ClientConfiguration clientConfig =  {}, string serviceUrl = "https://disease.sh") returns error? {
-        http:Client httpEp = check new (serviceUrl, clientConfig);
+    public isolated function init(ConnectionConfig config = {}, string serviceUrl = "https://disease.sh") returns error? {
+        http:ClientConfiguration httpClientConfig = check commons:constructHTTPClientConfig(config);
+        http:Client httpEp = check new (serviceUrl, httpClientConfig);
         self.clientEp = httpEp;
-        return;
     }
     # Get global COVID-19 totals for today, yesterday and two days ago
     #
